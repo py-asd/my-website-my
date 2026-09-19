@@ -93,52 +93,6 @@ async function searchTransaction() {
 }
 </script>
 
-async function searchTransaction() {
-    const numInput = document.getElementById('searchNum').value;
-    const resultBox = document.getElementById('resultBox');
-    
-    if(!numInput) {
-        alert('الرجاء إدخل الرقم التسلسلي أولاً!');
-        return;
-    }
-    
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
-    
-    // روابط الاتصال الآمنة بسيرفر Supabase الخاص بك
-    const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
-
-    try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${numInput}`, {
-            method: 'GET',
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if(data && data.length > 0) {
-            const item = data[0];
-            resultBox.innerHTML = `
-                <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'بلا'}</p>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'بلا'}</p>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>📝 الموضوع:</strong> ${item['الموضوع'] || 'بلا'}</p>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>🏢 الجهة المرسلة:</strong> ${item['الجهة المرسله للكتاب'] || 'بلا'}</p>
-                <p style="margin: 8px 0; color: white; font-size: 17px;"><strong>📌 الملاحظات:</strong> ${item['الملاحظات'] || 'بلا'}</p>
-            `;
-        } else {
-            resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
-        }
-    } catch (error) {
-        resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold;">⚠️ حدث خطأ أثناء الاتصال بقاعدة البيانات!</p>';
-    }
-}
-</script>
 
    <!-- <p>هذه الواجهة مستضافة الآن على سيرفرات إنترنت عالمية سحابية. يمكنك فتح هذا الرابط من موبايلك في أي وقت، حتى لو كان اللابتوب الخاص بي مغلقاً تماماً.</p> -->
     </div>
