@@ -31,7 +31,7 @@
 </head>
 <body>
     <div class="welcome-card">
-<!-- صندوق الاستعلام الذكي عن المعاملات -->
+<!--<!-- صندوق الاستعلام الذكي عن المعاملات -->
 <div class="search-container" style="margin-top: 20px; text-align: center;">
     <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
     <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
@@ -42,8 +42,57 @@
     <div id="resContent"></div>
 </div>
 
-<!-- مكتبة الربط والذكاء البرمجي -->
+<!-- مكتبة الربط والذكاء البرمجي مع سيرفر Supabase -->
 <script>
+async function searchTransaction() {
+    const numInput = document.getElementById('searchNum').value;
+    const resultBox = document.getElementById('resultBox');
+    
+    if(!numInput) {
+        alert('الرجاء إدخال الرقم التسلسلي أولاً!');
+        return;
+    }
+    
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
+    
+    // روابط الاتصال الآمنة بسيرفر Supabase الخاص بك
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
+
+    try {
+        // تم إضافة تحويل الرقم المباشر لضمان قراءة الجدول
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${numInput}`, {
+            method: 'GET',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Range': '0-0'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if(data && data.length > 0) {
+            const item = data[0]; // جلب السطر الأول المكتشف
+            resultBox.innerHTML = `
+                <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'بلا'}</p>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'بلا'}</p>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📝 الموضوع:</strong> ${item['الموضوع'] || 'بلا'}</p>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 الجهة المرسلة:</strong> ${item['الجهة المرسله للكتاب'] || 'بلا'}</p>
+                <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 الملاحظات:</strong> ${item['الملاحظات'] || 'بلا'}</p>
+            `;
+        } else {
+            resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
+        }
+    } catch (error) {
+        resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ أثناء جلب البيانات من السيرفر!</p>';
+    }
+}
+</script>
+
 async function searchTransaction() {
     const numInput = document.getElementById('searchNum').value;
     const resultBox = document.getElementById('resultBox');
