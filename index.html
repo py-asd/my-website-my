@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقعي العالمي الدائم</title>
-    <!-- استدعاء المكتبة الرسمية الذكية لـ Supabase -->
-    <script src="https://jsdelivr.net"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,7 +31,7 @@
     <div class="welcome-card">
         <!-- صندوق الاستعلام الذكي عن المعاملات -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم ن التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقمة التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -42,11 +40,6 @@
         </div>
 
         <script>
-        // تهيئة الاتصال الآمن والمباشر عبر مكتبة Supabase
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         async function searchTransaction() {
             const numInput = document.getElementById('searchNum').value;
             const resultBox = document.getElementById('resultBox');
@@ -57,19 +50,25 @@
             }
             
             resultBox.style.display = 'block';
-            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
+            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي المباشر...</p>';
             
-            try {
-                // استعلام مباشر يتوافق مع صيغة int8 للرقم التسلسلي
-                const { data, error } = await supabase
-                    .from('main')
-                    .select('*')
-                    .eq('num', parseInt(numInput, 10));
+            const SUPABASE_URL = "https://supabase.co";
+            const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0"; 
 
-                if (error) throw error;
+            try {
+                // اتصال نقي ومباشر بدون مكتبات خارجية لتخطي حظر الـ CORS وجدار الحماية
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${parseInt(numInput, 10)}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                
+                const data = await response.json();
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // التعديل الجوهري: استخراج السطر الأول [0] لمنع الانهيار
+                    const item = data[0]; // قراءة السطر الأول المكتشف بنجاح
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
