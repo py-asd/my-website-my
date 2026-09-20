@@ -29,20 +29,17 @@
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي عن المعاملات -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقمي431 التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="text" id="searchNum" placeholder="أدخل الرقم التسلسلي..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
-        <!-- مكان عرض النتيجة للمستخدم -->
         <div id="resultBox" style="margin-top: 25px; padding: 20px; border-radius: 8px; background: rgba(255,255,255,0.15); display: none; text-align: right; direction: rtl; border: 1px solid rgba(255,255,255,0.2);">
         </div>
 
-        <!-- مكتبة الربط والذكاء البرمجي مع سيرفر Supabase -->
         <script>
         async function searchTransaction() {
-            const numInput = document.getElementById('searchNum').value;
+            const numInput = document.getElementById('searchNum').value.trim();
             const resultBox = document.getElementById('resultBox');
             
             if(!numInput) {
@@ -57,6 +54,7 @@
             const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
 
             try {
+                // استعلام مرن للبحث عن الرقم كـ نص أو كـ رقم لتفادي مشاكل الأنواع
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${numInput}`, {
                     method: 'GET',
                     headers: {
@@ -68,7 +66,7 @@
                 const data = await response.json();
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // جلب السطر الأول من النتائج بشكل سليم
+                    const item = data[0];
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
