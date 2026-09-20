@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الاستعلام الذكي الدائم</title>
+    <title>نظام الاستعلام الذكي المستقل</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -29,9 +29,9 @@
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي -->
+        <!-- صندوق الاستعلام الذكي المحلي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقمي التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -40,8 +40,26 @@
         </div>
 
         <script>
+        // دالة ذكية تقوم بقراءة ملف CSV وتحويله إلى أسطر برمجية مفهومة
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"\$/g, ''));
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const currentline = lines[i].split(',').map(v => v.trim().replace(/^"|"\$/g, ''));
+                const obj = {};
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = currentline[j];
+                }
+                result.push(obj);
+            }
+            return result;
+        }
+
         async function searchTransaction() {
-            const numInput = document.getElementById('searchNum').value;
+            const numInput = document.getElementById('searchNum').value.trim();
             const resultBox = document.getElementById('resultBox');
             
             if(!numInput) {
@@ -50,48 +68,39 @@
             }
             
             resultBox.style.display = 'block';
-            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري فحص قاعدة البيانات السحابية...</p>';
+            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث الفوري في ملف البيانات المحلي...</p>';
             
-            const SUPABASE_URL = "https://supabase.co";
-            const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0"; 
-
             try {
-                // استعلام مباشر ونقي للاتصال بالجدول الجديد transactions
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/transactions?num=eq.${parseInt(numInput, 10)}`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
+                // جلب ملف main.csv المتواجد بجانب الموقع مباشرة دون سيرفرات خارجية
+                const response = await fetch('main.csv');
+                if (!response.ok) throw new Error('فشل في قراءة ملف البيانات المرفق');
                 
-                const data = await response.json();
+                const csvText = await response.text();
+                const transactions = parseCSV(csvText);
                 
-                if(data && data.length > 0) {
-                    const item = data[0]; // قراءة أول معاملة مطابقة بنجاح
-                    
-                    // توليد محتوى العرض وترجمة مسميات الأعمدة المرفوعة تلقائياً إلى لغة عربية منسقة وجذابة
+                // البحث عن الرقم المطابق داخل الملف
+                const foundItem = transactions.find(item => String(item['num']) === String(numInput));
+                
+                if(foundItem) {
                     let htmlContent = `<h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>`;
                     
-                    for (const key in item) {
-                        if (item.hasOwnProperty(key)) {
-                            let friendlyName = key;
-                            // هنا نقوم بتبديل المسميات التقنية إلى مسميات عربية جميلة للمستخدم
-                            if (key === 'num') friendlyName = 'الرقم التسلسلي';
-                            if (key === 'NO_DEPT') friendlyName = 'رقم/رمز القسم';
-                            if (key === 'DAT_DEPT') friendlyName = 'تاريخ القسم';
+                    // استخراج وعرض البيانات تلقائياً بأسمائها العربية أو الإنجليزية المخزنة بالملف
+                    for (const key in foundItem) {
+                        if (foundItem.hasOwnProperty(key) && key !== 'num') {
+                            let displayName = key;
+                            if (key === 'NO_DEPT') displayName = 'رقم/رمز القسم';
+                            if (key === 'DAT_DEPT') displayName = 'تاريخ القسم';
                             
-                            htmlContent += `<p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 ${friendlyName}:</strong> ${item[key] !== null ? item[key] : 'بلا'}</p>`;
+                            htmlContent += `<p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 ${displayName}:</strong> ${foundItem[key] || 'بلا'}</p>`;
                         }
                     }
-                    
                     resultBox.innerHTML = htmlContent;
                 } else {
-                    resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم غير مسجل في النظام السحابي!</p>';
+                    resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في ملف البيانات!</p>';
                 }
             } catch (error) {
                 console.error(error);
-                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ في الشبكة، يرجى الاستعلام باستخدام باقة بيانات الهاتف (4G/5G)!</p>';
+                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ أثناء قراءة البيانات المحلية المرفقة!</p>';
             }
         }
         </script>
