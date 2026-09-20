@@ -31,7 +31,7 @@
     <div class="welcome-card">
         <!-- صندوق الاستعلام الذكي المحلي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقمي التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم1 التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -40,9 +40,10 @@
         </div>
 
         <script>
-        // دالة ذكية تقوم بقراءة ملف CSV وتحويله إلى أسطر برمجية مفهومة
+        // دالة ذكية تم إصلاحها لتقرأ السطر الأول [0] وتفكك ملف CSV بنجاح
         function parseCSV(text) {
             const lines = text.split('\n');
+            if (lines.length === 0) return [];
             const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"\$/g, ''));
             const result = [];
 
