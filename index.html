@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقعي العالمي الدائم</title>
+    <title>نظام الاستعلام الذكي الدائم</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -29,9 +29,9 @@
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي عن المعاملات -->
+        <!-- صندوق الاستعلام الذكي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقمة التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -50,14 +50,14 @@
             }
             
             resultBox.style.display = 'block';
-            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي المباشر...</p>';
+            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري فحص قاعدة البيانات السحابية...</p>';
             
             const SUPABASE_URL = "https://supabase.co";
             const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0"; 
 
             try {
-                // اتصال نقي ومباشر بدون مكتبات خارجية لتخطي حظر الـ CORS وجدار الحماية
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${parseInt(numInput, 10)}`, {
+                // استعلام مباشر ونقي للاتصال بالجدول الجديد transactions
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/transactions?num=eq.${parseInt(numInput, 10)}`, {
                     method: 'GET',
                     headers: {
                         'apikey': SUPABASE_KEY,
@@ -68,20 +68,30 @@
                 const data = await response.json();
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // قراءة السطر الأول المكتشف بنجاح
-                    resultBox.innerHTML = `
-                        <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 رمز القسم (NO_DEPT):</strong> ${item['NO_DEPT'] || 'بلا'}</p>
-                    `;
+                    const item = data[0]; // قراءة أول معاملة مطابقة بنجاح
+                    
+                    // توليد محتوى العرض وترجمة مسميات الأعمدة المرفوعة تلقائياً إلى لغة عربية منسقة وجذابة
+                    let htmlContent = `<h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>`;
+                    
+                    for (const key in item) {
+                        if (item.hasOwnProperty(key)) {
+                            let friendlyName = key;
+                            // هنا نقوم بتبديل المسميات التقنية إلى مسميات عربية جميلة للمستخدم
+                            if (key === 'num') friendlyName = 'الرقم التسلسلي';
+                            if (key === 'NO_DEPT') friendlyName = 'رقم/رمز القسم';
+                            if (key === 'DAT_DEPT') friendlyName = 'تاريخ القسم';
+                            
+                            htmlContent += `<p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 ${friendlyName}:</strong> ${item[key] !== null ? item[key] : 'بلا'}</p>`;
+                        }
+                    }
+                    
+                    resultBox.innerHTML = htmlContent;
                 } else {
-                    resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
+                    resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم غير مسجل في النظام السحابي!</p>';
                 }
             } catch (error) {
                 console.error(error);
-                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ أثناء جلب البيانات من السيرفر السحابي!</p>';
+                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ في الشبكة، يرجى الاستعلام باستخدام باقة بيانات الهاتف (4G/5G)!</p>';
             }
         }
         </script>
