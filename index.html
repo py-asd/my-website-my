@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقعي العالمي الدائم</title>
-    <!-- استدعاء المكتبة الرسمية الذكية لـ Supabase -->
+    <!-- استدعاء المكتبة الرسمية لـ Supabase -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body {
@@ -31,18 +31,17 @@
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي عن المعاملات -->
+        <!-- صندوق الاستعلام الذكي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم777 التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
-        <!-- مكان عرض النتيجة للمستخدم -->
+        <!-- مكان عرض النتيجة -->
         <div id="resultBox" style="margin-top: 25px; padding: 20px; border-radius: 8px; background: rgba(255,255,255,0.15); display: none; text-align: right; direction: rtl; border: 1px solid rgba(255,255,255,0.2);">
         </div>
 
         <script>
-        // تهيئة الاتصال الآمن والمباشر عبر مكتبة Supabase
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -60,7 +59,7 @@
             resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
             
             try {
-                // استعلام آمن ومباشر يتوافق مع عمود int8 للرقم التسلسلي
+                // استعلام مباشر بناءً على عمود num
                 const { data, error } = await supabase
                     .from('main')
                     .select('*')
@@ -69,14 +68,18 @@
                 if (error) throw error;
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // قراءة الكائن الأول داخل المصفوفة بشكل محمي لمنع الانهيار
-                    resultBox.innerHTML = `
-                        <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'لا يوجد'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'لا يوجد'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'لا يوجد'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 رمز القسم (NO_DEPT):</strong> ${item['NO_DEPT'] || 'لا يوجد'}</p>
-                    `;
+                    const item = data[0]; 
+                    
+                    // بناء حلقة ذكية تقرأ كل الأعمدة الموجودة في جدولك وتطبعها تلقائياً مهما كانت مسمياتها
+                    let htmlContent = `<h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>`;
+                    
+                    for (const key in item) {
+                        if (item.hasOwnProperty(key)) {
+                            htmlContent += `<p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 ${key}:</strong> ${item[key] !== null ? item[key] : 'بلا'}</p>`;
+                        }
+                    }
+                    
+                    resultBox.innerHTML = htmlContent;
                 } else {
                     resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
                 }
