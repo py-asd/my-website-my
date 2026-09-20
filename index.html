@@ -29,28 +29,30 @@
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي المحلي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم 3التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
-        <!-- مكان عرض النتيجة للمستخدم -->
         <div id="resultBox" style="margin-top: 25px; padding: 20px; border-radius: 8px; background: rgba(255,255,255,0.15); display: none; text-align: right; direction: rtl; border: 1px solid rgba(255,255,255,0.2);">
         </div>
 
         <script>
         function parseCSV(text) {
-            const lines = text.split('\n');
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             if (lines.length === 0) return { headers: [], data: [] };
-            
-            // قراءة وتنظيف العناوين
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"\$/g, ''));
+
+            // اكتشاف الفاصل المستخدم تلقائياً لتفادي مشاكل Excel العربي
+            let delimiter = ',';
+            const firstLine = lines[0];
+            if (firstLine.includes(';')) delimiter = ';';
+            else if (firstLine.includes('\t')) delimiter = '\t';
+
+            const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^"|"\$/g, ''));
             const result = [];
 
             for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const currentline = lines[i].split(',').map(v => v.trim().replace(/^"|"\$/g, ''));
+                const currentline = lines[i].split(delimiter).map(v => v.trim().replace(/^"|"\$/g, ''));
                 const obj = {};
                 for (let j = 0; j < headers.length; j++) {
                     obj[headers[j]] = currentline[j] || '';
@@ -74,25 +76,25 @@
             
             try {
                 const response = await fetch('main.csv');
-                if (!response.ok) throw new Error('فشل في قراءة ملف البيانات المرفق');
+                if (!response.ok) throw new Error('فشل في قراءة ملف البيانات');
                 
                 const csvText = await response.text();
                 const parsed = parseCSV(csvText);
                 
-                // تحديد اسم العمود الأول تلقائياً مهما كان مكتوباً ليكون هو عمود البحث
                 const firstColumnName = parsed.headers[0]; 
                 
-                // البحث عن الرقم المطابق داخل العمود الأول للملف
-                const foundItem = parsed.data.find(item => String(item[firstColumnName]).trim() === String(numInput));
+                // بحث مرن يتجاهل أي مسافات مخفية ناتجة عن التشفير
+                const foundItem = parsed.data.find(item => {
+                    const itemValue = String(item[firstColumnName]).trim();
+                    return itemValue === numInput || itemValue.replace(/[\u200B-\u200D\uFEFF]/g, '') === numInput;
+                });
                 
                 if(foundItem) {
                     let htmlContent = `<h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>`;
                     
-                    // استخراج وعرض البيانات وتنسيق المسميات تلقائياً
                     for (const key in foundItem) {
                         if (foundItem.hasOwnProperty(key)) {
                             let displayName = key;
-                            // استبدال المسميات التقنية بعبارات عربية منسقة للواجهة
                             if (key === firstColumnName) displayName = 'الرقم التسلسلي';
                             if (key === 'NO_DEPT') displayName = 'رقم/رمز القسم';
                             if (key === 'DAT_DEPT') displayName = 'تاريخ القسم';
