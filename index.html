@@ -31,7 +31,7 @@
     <div class="welcome-card">
         <!-- صندوق الاستعلام الذكي عن المعاملات -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقمرجاءا التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -46,7 +46,7 @@
             const resultBox = document.getElementById('resultBox');
             
             if(!numInput) {
-                alert('الرجاء إدخل الرقم للللالتسلسلي أولاً!');
+                alert('الرجاء إدخال الرقم التسلسلي أولاً!');
                 return;
             }
             
@@ -57,7 +57,6 @@
             const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
 
             try {
-                // استعلام جلب البيانات بناءً على عمود الـ num
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${numInput}`, {
                     method: 'GET',
                     headers: {
@@ -69,15 +68,13 @@
                 const data = await response.json();
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // تم تصحيح قراءة العنصر الأول هنا لإنهاء الـ Crash
+                    const item = data[0]; // جلب السطر الأول من النتائج بشكل سليم
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'بلا'}</p>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📝 الموضوع:</strong> ${item['الموضوع'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 الجهة المرسلة:</strong> ${item['الجهة المرسله للكتاب'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 الملاحظات:</strong> ${item['الملاحظات'] || 'بلا'}</p>
+                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 رمز القسم (NO_DEPT):</strong> ${item['NO_DEPT'] || 'بلا'}</p>
                     `;
                 } else {
                     resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
