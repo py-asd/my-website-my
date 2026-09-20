@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقعي العالمي الدائم</title>
+    <!-- استدعاء المكتبة الرسمية الذكية لـ Supabase لحل مشاكل الاتصال والأمان -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -31,7 +33,7 @@
     <div class="welcome-card">
         <!-- صندوق الاستعلام الذكي عن المعاملات -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم 44التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي (num)..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -39,39 +41,35 @@
         <div id="resultBox" style="margin-top: 25px; padding: 20px; border-radius: 8px; background: rgba(255,255,255,0.15); display: none; text-align: right; direction: rtl; border: 1px solid rgba(255,255,255,0.2);">
         </div>
 
-        <!-- مكتبة الربط والذكاء البرمجي مع سيرفر Supabase -->
         <script>
+        // تهيئة الاتصال الآمن والمباشر عبر مكتبة Supabase
+        const SUPABASE_URL = "https://supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         async function searchTransaction() {
             const numInput = document.getElementById('searchNum').value;
             const resultBox = document.getElementById('resultBox');
             
             if(!numInput) {
-                alert('الالرجاء إدخال الرقم التسلسلي أولاً!');
+                alert('الرجاء إدخال الرقم التسلسلي أولاً!');
                 return;
             }
             
             resultBox.style.display = 'block';
-            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
+            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي الآمن...</p>';
             
-            const SUPABASE_URL = "https://supabase.co";
-            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
-
             try {
-                // تحويل المدخلات إلى رقم صحيح يتطابق مع نوع int8 في السيرفر
-                const parsedNum = parseInt(numInput, 10);
+                // الاستعلام الذكي المباشر المتوافق مع عمود int8 ومتخطي للـ CORS
+                const { data, error } = await supabase
+                    .from('main')
+                    .select('*')
+                    .eq('num', parseInt(numInput, 10));
 
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${parsedNum}`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
-                
-                const data = await response.json();
+                if (error) throw error;
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // جلب العنصر الأول من المصفوفة لإنهاء تفكيك الأسطر
+                    const item = data[0]; // قراءة أول سطر متطابق مكتشف
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
@@ -83,7 +81,8 @@
                     resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
                 }
             } catch (error) {
-                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ أثناء جلب البيانات من السيرفر!</p>';
+                console.error(error);
+                resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">⚠️ حدث خطأ أثناء جلب البيانات من السيرفر السحابي!</p>';
             }
         }
         </script>
