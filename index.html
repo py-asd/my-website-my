@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقعي العالمي الدائم</title>
-    <!-- استدعاء المكتبة الرسمية الذكية لـ Supabase لحل مشاكل الاتصال والأمان -->
+    <!-- استدعاء المكتبة الرسمية الذكية لـ Supabase -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body {
@@ -42,9 +42,9 @@
         </div>
 
         <script>
-        // تهيئة الاتصال الآمن والمباشر عبر مكتبة Supabase باستخدام المفتاح الجديد من شاشتك
+        // تهيئة الاتصال الآمن والمباشر عبر مكتبة Supabase
         const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0"; 
+        const SUPABASE_KEY = "sb_publishable_1bI_L21S-jOGYCu0u13S1A_CUZn9_v_xIidXfCia0T46v_oE4Hw9R2b1pG5jZ3mN7uC_0";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function searchTransaction() {
@@ -57,10 +57,10 @@
             }
             
             resultBox.style.display = 'block';
-            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي الآمن...</p>';
+            resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث في السيرفر السحابي...</p>';
             
             try {
-                // الاستعلام الذكي المباشر المتوافق مع عمود int8 ومتخطي للـ CORS
+                // استعلام آمن ومباشر يتوافق مع عمود int8 للرقم التسلسلي
                 const { data, error } = await supabase
                     .from('main')
                     .select('*')
@@ -69,13 +69,13 @@
                 if (error) throw error;
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // قراءة أول سطر متطابق مكتشف
+                    const item = data[0]; // قراءة الكائن الأول داخل المصفوفة بشكل محمي لمنع الانهيار
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'بلا'}</p>
-                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 رمز القسم (NO_DEPT):</strong> ${item['NO_DEPT'] || 'بلا'}</p>
+                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'لا يوجد'}</p>
+                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🔢 رقم المعاملة:</strong> ${item['رقم'] || 'لا يوجد'}</p>
+                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📅 التاريخ:</strong> ${item['التاريخ'] || 'لا يوجد'}</p>
+                        <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>🏢 رمز القسم (NO_DEPT):</strong> ${item['NO_DEPT'] || 'لا يوجد'}</p>
                     `;
                 } else {
                     resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في النظام!</p>';
