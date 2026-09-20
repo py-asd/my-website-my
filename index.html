@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -25,8 +25,6 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
             max-width: 85%;
         }
-        h1 { font-size: 2.5rem; margin-bottom: 15px; color: #00f2fe; }
-        p { font-size: 1.2rem; opacity: 0.9; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -59,7 +57,6 @@
             const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZ3dtc3FsbGpxamRnZnFqdWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMTU0NTcsImV4cCI6MjA3Mzg5MTQ1N30.gK2qS3fV8b_nZ4tF5T6R7X8_P_uB_f9mN3z2L4x5w_0"; 
 
             try {
-                // استعلام للتأكد من وجود الرقم في عمود num
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/main?num=eq.${numInput}`, {
                     method: 'GET',
                     headers: {
@@ -71,7 +68,7 @@
                 const data = await response.json();
                 
                 if(data && data.length > 0) {
-                    const item = data[0]; // تم تصحيح جلب العنصر الأول هنا لإنهاء الخطأ
+                    const item = data[0]; // تم الإصلاح للتأكد من قراءة المصفوفة بشكل صحيح
                     resultBox.innerHTML = `
                         <h3 style="text-align:center; color:#00ffcc; margin-bottom:15px; font-family:sans-serif;">📊 تفاصيل المعاملة المكتشفة</h3>
                         <p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📄 رقم الكتاب الوارد:</strong> ${item['رقم الكتاب الوارد'] || 'بلا'}</p>
