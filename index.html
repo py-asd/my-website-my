@@ -31,7 +31,7 @@
     <div class="welcome-card">
         <!-- صندوق الاستعلام الذكي المحلي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم1 التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
@@ -40,10 +40,11 @@
         </div>
 
         <script>
-        // دالة ذكية تم إصلاحها لتقرأ السطر الأول [0] وتفكك ملف CSV بنجاح
         function parseCSV(text) {
             const lines = text.split('\n');
-            if (lines.length === 0) return [];
+            if (lines.length === 0) return { headers: [], data: [] };
+            
+            // قراءة وتنظيف العناوين
             const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"\$/g, ''));
             const result = [];
 
@@ -52,11 +53,11 @@
                 const currentline = lines[i].split(',').map(v => v.trim().replace(/^"|"\$/g, ''));
                 const obj = {};
                 for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = currentline[j];
+                    obj[headers[j]] = currentline[j] || '';
                 }
                 result.push(obj);
             }
-            return result;
+            return { headers, data: result };
         }
 
         async function searchTransaction() {
@@ -72,23 +73,27 @@
             resultBox.innerHTML = '<p style="text-align:center; color: white;">🔍 جاري البحث الفوري في ملف البيانات المحلي...</p>';
             
             try {
-                // جلب ملف main.csv المتواجد بجانب الموقع مباشرة دون سيرفرات خارجية
                 const response = await fetch('main.csv');
                 if (!response.ok) throw new Error('فشل في قراءة ملف البيانات المرفق');
                 
                 const csvText = await response.text();
-                const transactions = parseCSV(csvText);
+                const parsed = parseCSV(csvText);
                 
-                // البحث عن الرقم المطابق داخل الملف
-                const foundItem = transactions.find(item => String(item['num']) === String(numInput));
+                // تحديد اسم العمود الأول تلقائياً مهما كان مكتوباً ليكون هو عمود البحث
+                const firstColumnName = parsed.headers[0]; 
+                
+                // البحث عن الرقم المطابق داخل العمود الأول للملف
+                const foundItem = parsed.data.find(item => String(item[firstColumnName]).trim() === String(numInput));
                 
                 if(foundItem) {
                     let htmlContent = `<h3 style="text-align:center; color:#00ffcc; margin-bottom:15px;">📊 تفاصيل المعاملة المكتشفة</h3>`;
                     
-                    // استخراج وعرض البيانات تلقائياً بأسمائها العربية أو الإنجليزية المخزنة بالملف
+                    // استخراج وعرض البيانات وتنسيق المسميات تلقائياً
                     for (const key in foundItem) {
-                        if (foundItem.hasOwnProperty(key) && key !== 'num') {
+                        if (foundItem.hasOwnProperty(key)) {
                             let displayName = key;
+                            // استبدال المسميات التقنية بعبارات عربية منسقة للواجهة
+                            if (key === firstColumnName) displayName = 'الرقم التسلسلي';
                             if (key === 'NO_DEPT') displayName = 'رقم/رمز القسم';
                             if (key === 'DAT_DEPT') displayName = 'تاريخ القسم';
                             
