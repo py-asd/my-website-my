@@ -29,20 +29,22 @@
 </head>
 <body>
     <div class="welcome-card">
+        <!-- صندوق الاستعلام الذكي المحلي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
-            <input type="number" id="searchNum" placeholder="أدخل الرقم 3التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
+            <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
         </div>
 
+        <!-- مكان عرض النتيجة للمستخدم -->
         <div id="resultBox" style="margin-top: 25px; padding: 20px; border-radius: 8px; background: rgba(255,255,255,0.15); display: none; text-align: right; direction: rtl; border: 1px solid rgba(255,255,255,0.2);">
         </div>
 
         <script>
+        // دالة ذكية ومحدثة لفك تشفير النصوص العربية بشكل سليم وتجربة كافة الفواصل
         function parseCSV(text) {
             const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             if (lines.length === 0) return { headers: [], data: [] };
 
-            // اكتشاف الفاصل المستخدم تلقائياً لتفادي مشاكل Excel العربي
             let delimiter = ',';
             const firstLine = lines[0];
             if (firstLine.includes(';')) delimiter = ';';
@@ -78,12 +80,14 @@
                 const response = await fetch('main.csv');
                 if (!response.ok) throw new Error('فشل في قراءة ملف البيانات');
                 
-                const csvText = await response.text();
-                const parsed = parseCSV(csvText);
+                // التعديل الجوهري: قراءة الملف مصفوفة بايتات وإعادة تحويله للغة العربية الصحيحة (windows-1256) لمنع الرموز الغريبة
+                const arrayBuffer = await response.arrayBuffer();
+                const decoder = new TextDecoder('windows-1256'); 
+                const csvText = decoder.decode(arrayBuffer);
                 
+                const parsed = parseCSV(csvText);
                 const firstColumnName = parsed.headers[0]; 
                 
-                // بحث مرن يتجاهل أي مسافات مخفية ناتجة عن التشفير
                 const foundItem = parsed.data.find(item => {
                     const itemValue = String(item[firstColumnName]).trim();
                     return itemValue === numInput || itemValue.replace(/[\u200B-\u200D\uFEFF]/g, '') === numInput;
@@ -95,6 +99,7 @@
                     for (const key in foundItem) {
                         if (foundItem.hasOwnProperty(key)) {
                             let displayName = key;
+                            // خريطة لتبديل المسميات التقنية بعبارات عربية منسقة للواجهة
                             if (key === firstColumnName) displayName = 'الرقم التسلسلي';
                             if (key === 'NO_DEPT') displayName = 'رقم/رمز القسم';
                             if (key === 'DAT_DEPT') displayName = 'تاريخ القسم';
