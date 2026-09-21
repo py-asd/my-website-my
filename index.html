@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الاستعلام الذكي المستقل</title>
+    <!-- استدعاء أيقونات FontAwesome لشكل زر التحميل الاحترافي -->
+    <link rel="stylesheet" href="https://cloudflare.com">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -25,11 +27,31 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
             max-width: 85%;
         }
+        .pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #ff4d4d;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(255, 77, 77, 0.4);
+            transition: all 0.3s ease;
+        }
+        .pdf-btn:hover {
+            background-color: #e03e3e;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <div class="welcome-card">
-        <!-- صندوق الاستعلام الذكي المحلي -->
+        <!-- صندوق الاستعلام الذكي -->
         <div class="search-container" style="margin-top: 20px; text-align: center;">
             <input type="number" id="searchNum" placeholder="أدخل الرقم التسلسلي للبحث..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; text-align: center; color: black;">
             <button onclick="searchTransaction()" style="padding: 10px 20px; background-color: #0070f3; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-left: 10px; font-weight: bold;">استعلام</button>
@@ -40,7 +62,6 @@
         </div>
 
         <script>
-        // دالة ذكية ومحدثة لفك تشفير النصوص العربية بشكل سليم وتجربة كافة الفواصل
         function parseCSV(text) {
             const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             if (lines.length === 0) return { headers: [], data: [] };
@@ -80,7 +101,6 @@
                 const response = await fetch('main.csv');
                 if (!response.ok) throw new Error('فشل في قراءة ملف البيانات');
                 
-                // التعديل الجوهري: قراءة الملف مصفوفة بايتات وإعادة تحويله للغة العربية الصحيحة (windows-1256) لمنع الرموز الغريبة
                 const arrayBuffer = await response.arrayBuffer();
                 const decoder = new TextDecoder('windows-1256'); 
                 const csvText = decoder.decode(arrayBuffer);
@@ -99,7 +119,6 @@
                     for (const key in foundItem) {
                         if (foundItem.hasOwnProperty(key)) {
                             let displayName = key;
-                            // خريطة لتبديل المسميات التقنية بعبارات عربية منسقة للواجهة
                             if (key === firstColumnName) displayName = 'الرقم التسلسلي';
                             if (key === 'NO_DEPT') displayName = 'رقم/رمز القسم';
                             if (key === 'DAT_DEPT') displayName = 'تاريخ القسم';
@@ -107,6 +126,18 @@
                             htmlContent += `<p style="margin: 8px 0; color: white; font-size: 18px;"><strong>📌 ${displayName}:</strong> ${foundItem[key] || 'بلا'}</p>`;
                         }
                     }
+                    
+                    // إضافة أيقونة وزر سحب وتحميل كتاب الـ PDF المربوط بالرقم بشكل جمالي
+                    const pdfUrl = `books/${numInput}.pdf`;
+                    htmlContent += `
+                        <div style="text-align:center; margin-top:20px;">
+                            <a href="${pdfUrl}" target="_blank" class="pdf-btn">
+                                <i class="fa-solid fa-file-pdf style="font-size:20px;"></i>
+                                تحميل / عرض الكتاب الصادر PDF
+                            </a>
+                        </div>
+                    `;
+                    
                     resultBox.innerHTML = htmlContent;
                 } else {
                     resultBox.innerHTML = '<p style="text-align:center; color:#ff4d4d; font-weight:bold; font-size: 16px;">❌ عذراً، هذا الرقم التسلسلي غير مسجل في ملف البيانات!</p>';
